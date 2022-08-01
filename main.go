@@ -4,26 +4,42 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-func greet(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World! \nTime now is: %v\n", time.Now().Format(time.RFC3339))
+var (
+	pathBase string
+	port     string
+)
+
+func init() {
+	pathBase = os.Getenv("ASH_PATH_BASE")
+	port = os.Getenv("ASH_PORT")
+	if port == "" {
+		port = "80"
+	}
 }
 
-func headers(w http.ResponseWriter, r *http.Request) {
-	r.BasicAuth()
+func greet(c *gin.Context) {
+	c.String(http.StatusOK, fmt.Sprintf("Hello World! \nTime now is: %v\n", time.Now().Format(time.RFC3339)))
+}
+
+func headers(c *gin.Context) {
 	var headers string
-	for k, v := range r.Header {
+	for k, v := range c.Request.Header {
 		headers += fmt.Sprintf("%v: %v\n", k, v)
 	}
-
-	fmt.Fprintf(w, "Headers: \n%v\n", headers)
+	c.String(http.StatusOK, "headers \n"+headers)
 }
 
 func main() {
-	log.Println("server started.")
-	http.HandleFunc("/headers", headers)
-	http.HandleFunc("/", greet)
-	http.ListenAndServe(":8081", nil)
+	server := gin.Default()
+	sg := server.Group(pathBase)
+	sg.GET("", greet)
+	sg.GET("/headers", headers)
+
+	log.Fatalln(server.Run(":" + port))
 }
