@@ -24,7 +24,11 @@ func init() {
 }
 
 func greet(c *gin.Context) {
-	c.String(http.StatusOK, fmt.Sprintf("Hello World! \nTime now is: %v\n", time.Now().Format(time.RFC3339)))
+	host, _ := os.Hostname()
+	if host == "" {
+		host = "-"
+	}
+	c.String(http.StatusOK, fmt.Sprintf("Hello World! \nTime now is: %v\nServer: %s\n", time.Now().Format(time.RFC3339), host))
 }
 
 func headers(c *gin.Context) {
