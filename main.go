@@ -5,9 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -17,33 +16,38 @@ var (
 
 func init() {
 	pathBase = os.Getenv("ASH_PATH_BASE")
+	if pathBase != "" && !strings.HasPrefix(pathBase, "/") {
+		pathBase = "/" + pathBase
+	}
 	port = os.Getenv("ASH_PORT")
 	if port == "" {
 		port = "80"
 	}
 }
 
-func greet(c *gin.Context) {
+func headers(w http.ResponseWriter, r *http.Request) {
+	var headers string
+	for k, v := range r.Header {
+		headers += fmt.Sprintf("%v: %v\n", k, v)
+	}
+	fmt.Fprintf(w, "Headers \n"+headers)
+}
+
+func greet(w http.ResponseWriter, r *http.Request) {
 	host, _ := os.Hostname()
 	if host == "" {
 		host = "-"
 	}
-	c.String(http.StatusOK, fmt.Sprintf("Hello World! \nTime now is: %v\nServer: %s\n", time.Now().Format(time.RFC3339), host))
-}
-
-func headers(c *gin.Context) {
-	var headers string
-	for k, v := range c.Request.Header {
-		headers += fmt.Sprintf("%v: %v\n", k, v)
-	}
-	c.String(http.StatusOK, "headers \n"+headers)
+	fmt.Fprintf(w, "Hello World! \nTime now is: %v\nServer: %s\n", time.Now().Format(time.RFC3339), host)
 }
 
 func main() {
-	server := gin.Default()
-	sg := server.Group(pathBase)
-	sg.GET("", greet)
-	sg.GET("/headers", headers)
+	rootPath := pathBase
+	if pathBase == "" {
+		rootPath = "/"
+	}
 
-	log.Fatalln(server.Run(":" + port))
+	http.HandleFunc(pathBase+"/headers", headers)
+	http.HandleFunc(rootPath, greet)
+	log.Fatalln(http.ListenAndServe(":"+port, nil))
 }

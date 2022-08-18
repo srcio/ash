@@ -13,4 +13,3 @@ WORKDIR /app
 COPY --from=builder /app/ash /app/ash
 
 CMD ["./ash"]
-
