@@ -38,6 +38,7 @@ func greet(w http.ResponseWriter, r *http.Request) {
 	if host == "" {
 		host = "-"
 	}
+	log.Println("GET [200] /")
 	fmt.Fprintf(w, "Hello World! \nTime now is: %v\nServer: %s\n", time.Now().Format(time.RFC3339), host)
 }
 
@@ -49,5 +50,6 @@ func main() {
 
 	http.HandleFunc(pathBase+"/headers", headers)
 	http.HandleFunc(rootPath, greet)
+	log.Println("ash server started.")
 	log.Fatalln(http.ListenAndServe(":"+port, nil))
 }
