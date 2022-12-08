@@ -12,6 +12,7 @@ import (
 var (
 	pathBase string
 	port     string
+	version  string
 )
 
 func init() {
@@ -22,6 +23,10 @@ func init() {
 	port = os.Getenv("ASH_PORT")
 	if port == "" {
 		port = "80"
+	}
+	version = os.Getenv("ASH_VERSION")
+	if version == "" {
+		version = "v1"
 	}
 }
 
@@ -39,7 +44,7 @@ func greet(w http.ResponseWriter, r *http.Request) {
 		host = "-"
 	}
 	log.Println("GET [200] /")
-	fmt.Fprintf(w, "Hello World! \nTime now is: %v\nServer: %s\n", time.Now().Format(time.RFC3339), host)
+	fmt.Fprintf(w, "Hello World! \nTime now is: %v\nServer: %s\nash version: %s\n", time.Now().Format(time.RFC3339), host, version)
 }
 
 func main() {
